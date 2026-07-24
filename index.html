@@ -490,6 +490,10 @@
     .note { font-size: 0.7rem !important; padding: 6px 10px !important; }
     .footer { padding: 12px 0 !important; font-size: 0.7rem !important; }
     .slider-container .slider-header .value { font-size: 1rem !important; }
+    
+    /* Chart in print */
+    #growthChart { max-width: 100% !important; height: auto !important; }
+    .card:has(#growthChart) { break-inside: avoid; page-break-inside: avoid; padding: 8px 12px !important; }
   }
 
   /* PDF loading overlay */
@@ -767,6 +771,19 @@
     </div>
   </div>
 
+  <!-- Growth Chart: X vs Y -->
+  <div class="card">
+    <div class="card-title">📈 Growth Comparison — X vs Y Over Time</div>
+    <div style="position:relative;">
+      <canvas id="growthChart" width="1060" height="320" style="width:100%;height:auto;max-width:1060px;background:var(--gray-800);border-radius:8px;display:block;margin:0 auto;"></canvas>
+    </div>
+    <div style="display:flex;justify-content:center;gap:30px;margin-top:10px;font-size:0.85rem;flex-wrap:wrap;">
+      <span><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Projection X</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#a855f7;border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Projection Y</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--orange);border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Initial Investment</span>
+    </div>
+  </div>
+
   <!-- MYR ↔ BTC Converter -->
   <div class="card">
     <div class="card-title">🔄 MYR ↔ BTC Converter</div>
@@ -801,12 +818,33 @@
         <div class="value" style="color:var(--orange);" id="summaryYears">—</div>
       </div>
       <div class="result-item">
-        <div class="label">Best Projection (X/Y)</div>
+        <div class="label">Best Projection</div>
         <div class="value positive" id="summaryBest">—</div>
       </div>
       <div class="result-item">
         <div class="label">In BTC Equivalent</div>
         <div class="value" style="color:var(--orange);" id="summaryBtc">—</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-700);">
+      <div style="font-size:0.85rem;color:var(--gray-400);margin-bottom:6px;">📦 Product Detail</div>
+      <div class="result-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+        <div class="result-item">
+          <div class="label">Product</div>
+          <div class="value" style="color:var(--teal);font-size:0.95rem;" id="summaryProductName">—</div>
+        </div>
+        <div class="result-item">
+          <div class="label">Total Upfront</div>
+          <div class="value" style="color:var(--teal);font-size:0.95rem;" id="summaryUpfront">—</div>
+        </div>
+        <div class="result-item">
+          <div class="label">Monthly Net (Yr 1)</div>
+          <div class="value" id="summaryMonthlyNet">—</div>
+        </div>
+        <div class="result-item">
+          <div class="label">Breakeven</div>
+          <div class="value" style="color:var(--green);font-size:0.95rem;" id="summaryBreakeven">—</div>
+        </div>
       </div>
     </div>
   </div>
@@ -947,6 +985,9 @@ function calculate() {
   document.getElementById('summaryYears').textContent = years + ' yr' + (years !== 1 ? 's' : '');
   document.getElementById('summaryBest').textContent = fvX >= fvY ? fmtRm(fvX) + ' (X)' : fmtRm(fvY) + ' (Y)';
   document.getElementById('summaryBtc').textContent = fmtBtc(btcPriceMYR > 0 ? investment / btcPriceMYR : 0);
+
+  // Draw growth chart
+  drawGrowthChart(investment, rateX, rateY, years);
 }
 
 // ── Product Summary Calculation ──
@@ -1007,9 +1048,141 @@ function calculateProduct() {
   }
 
   document.getElementById('totalCapitalNeeded').textContent = fmtRm(totalCapitalNeeded);
+
+  // Update summary product section
+  document.getElementById('summaryProductName').textContent = document.getElementById('productName').value || '—';
+  document.getElementById('summaryUpfront').textContent = fmtRm(totalUpfront);
+  document.getElementById('summaryMonthlyNet').textContent = fmtRm(avgMonthlyNet);
+  document.getElementById('summaryMonthlyNet').className = 'value' + (avgMonthlyNet >= 0 ? ' positive' : ' negative');
+  if (typeof breakeven === 'number') {
+    document.getElementById('summaryBreakeven').textContent = breakeven + ' mo';
+  } else {
+    document.getElementById('summaryBreakeven').textContent = '∞';
+    document.getElementById('summaryBreakeven').className = 'value negative';
+  }
 }
 
-// ── Converter ──
+// ── Draw Growth Comparison Chart ──
+function drawGrowthChart(investment, rateX, rateY, years) {
+  const canvas = document.getElementById('growthChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  const pad = { top: 30, bottom: 40, left: 70, right: 30 };
+  const chartW = w - pad.left - pad.right;
+  const chartH = h - pad.top - pad.bottom;
+
+  // Compute data points (yearly)
+  const steps = Math.max(Math.ceil(years), 1);
+  const dataX = [];
+  const dataY = [];
+  let maxVal = investment;
+  for (let y = 0; y <= steps; y++) {
+    const t = (y / steps) * years;
+    const vx = investment * Math.pow(1 + rateX / 100, t);
+    const vy = investment * Math.pow(1 + rateY / 100, t);
+    dataX.push({ t, v: vx });
+    dataY.push({ t, v: vy });
+    if (vx > maxVal) maxVal = vx;
+    if (vy > maxVal) maxVal = vy;
+  }
+  maxVal = Math.ceil(maxVal * 1.15 / 10000) * 10000;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid lines
+  const gridLines = 5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i <= gridLines; i++) {
+    const val = (maxVal / gridLines) * i;
+    const y = pad.top + chartH - (chartH * i / gridLines);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+    ctx.fillText('RM ' + Math.round(val).toLocaleString('en-MY'), pad.left - 8, y);
+  }
+
+  // X axis labels
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const xStep = steps > 10 ? Math.ceil(steps / 10) : 1;
+  for (let y = 0; y <= steps; y += xStep) {
+    const t = (y / steps) * years;
+    const x = pad.left + (t / years) * chartW;
+    ctx.fillText(Number(t).toFixed(t % 1 === 0 ? 0 : 1) + 'yr', x, h - pad.bottom + 8);
+  }
+  ctx.fillText('Time', w / 2, h - pad.bottom + 24);
+
+  function drawLine(data, color, dashed) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash(dashed ? [6, 4] : []);
+    data.forEach((d, i) => {
+      const x = pad.left + (d.t / years) * chartW;
+      const y = pad.top + chartH - (d.v / maxVal) * chartH;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+    data.forEach((d, i) => {
+      if (i % Math.ceil(steps / 8) !== 0 && i !== 0 && i !== data.length - 1) return;
+      const x = pad.left + (d.t / years) * chartW;
+      const y = pad.top + chartH - (d.v / maxVal) * chartH;
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+  }
+
+  // Initial investment line
+  ctx.beginPath();
+  ctx.strokeStyle = '#F7931A';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  const initY = pad.top + chartH - (investment / maxVal) * chartH;
+  ctx.moveTo(pad.left, initY);
+  ctx.lineTo(w - pad.right, initY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#F7931A';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillText('Initial RM ' + investment.toLocaleString('en-MY'), pad.left + 6, initY - 2);
+
+  drawLine(dataX, '#3b82f6', false);
+  drawLine(dataY, '#a855f7', false);
+
+  // End labels
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+  const lastX = dataX[dataX.length - 1];
+  const lx = pad.left + (lastX.t / years) * chartW + 8;
+  const ly = pad.top + chartH - (lastX.v / maxVal) * chartH - 8;
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText('X: RM ' + Math.round(lastX.v).toLocaleString('en-MY'), lx, ly);
+  const lastY = dataY[dataY.length - 1];
+  const lx2 = pad.left + (lastY.t / years) * chartW + 8;
+  const ly2 = pad.top + chartH - (lastY.v / maxVal) * chartH - 8;
+  ctx.fillStyle = '#a855f7';
+  ctx.fillText('Y: RM ' + Math.round(lastY.v).toLocaleString('en-MY'), lx2, ly2);
+}
+
+// ── MYR ↔ BTC Converter ──
 function convMyrToBtc() {
   const myr = parseFloat(document.getElementById('convMyr').value) || 0;
   const btc = btcPriceMYR > 0 ? myr / btcPriceMYR : 0;
@@ -1054,7 +1227,7 @@ function exportPDF() {
   const content = document.getElementById('pdfContent').cloneNode(true);
   
   // Remove interactive elements from the clone
-  const removable = content.querySelectorAll('.btn, .btn-pdf, .btn-reset, .update-btn, .conv-swap, #pdfOverlay');
+  const removable = content.querySelectorAll('.btn, .btn-pdf, .btn-reset, .update-btn, .conv-swap');
   removable.forEach(el => el.remove());
   
   // Build the print page
@@ -1076,7 +1249,20 @@ ${styleHTML}
   @page { size: A4 landscape; margin: 12mm; }
 </style>
 </head>
-<body onload="window.print(); window.close();">
+<body>
+<script>
+  window.onload = function() {
+    window.print();
+    // Close after print dialog is dismissed
+    if (window.matchMedia) {
+      var mq = window.matchMedia('print');
+      mq.addListener(function(mql) {
+        if (!mql.matches) setTimeout(function(){ window.close(); }, 500);
+      });
+    }
+    window.onafterprint = function() { setTimeout(function(){ window.close(); }, 500); };
+  };
+<\/script>
   ${content.outerHTML}
 </body>
 </html>`);
