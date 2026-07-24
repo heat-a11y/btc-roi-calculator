@@ -563,6 +563,7 @@
     
     /* Charts in print */
     #growthChartRM, #growthChartBTC { max-width: 100% !important; height: auto !important; }
+    img[alt="growthChartRM"], img[alt="growthChartBTC"] { max-width: 100% !important; height: auto !important; }
     .card:has(#growthChartRM) { break-inside: avoid; page-break-inside: avoid; padding: 8px 12px !important; }
   }
 
@@ -1466,6 +1467,23 @@ function exportPDF() {
   
   // Clone the main content
   const content = document.getElementById('pdfContent').cloneNode(true);
+  
+  // Convert canvas elements to static images (canvases lose drawn content when serialized)
+  content.querySelectorAll('canvas').forEach(canvas => {
+    const origCanvas = document.getElementById(canvas.id);
+    if (origCanvas && origCanvas.toDataURL) {
+      const img = document.createElement('img');
+      img.src = origCanvas.toDataURL('image/png');
+      img.style.width = canvas.style.width || '100%';
+      img.style.height = canvas.style.height || 'auto';
+      img.style.maxWidth = '100%';
+      img.style.display = 'block';
+      img.style.margin = '0 auto';
+      img.style.borderRadius = '8px';
+      img.alt = canvas.id;
+      canvas.parentNode.replaceChild(img, canvas);
+    }
+  });
   
   // Remove interactive elements from the clone
   const removable = content.querySelectorAll('.btn, .btn-pdf, .btn-reset, .update-btn, .conv-swap');
