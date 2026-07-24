@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BTC ROI Calculator — Investment Projection</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
   :root {
     --orange: #F7931A;
@@ -17,6 +18,9 @@
     --gray-200: #ccc;
     --green: #10b981;
     --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --teal: #14b89c;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -27,124 +31,157 @@
     padding: 20px;
   }
   .container {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
   }
 
   /* Header */
   .header {
     text-align: center;
-    padding: 40px 20px 30px;
+    padding: 30px 20px 20px;
     border-bottom: 1px solid var(--gray-700);
-    margin-bottom: 30px;
+    margin-bottom: 24px;
+    position: relative;
   }
   .header h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 700;
   }
   .header h1 span { color: var(--orange); }
   .header p {
     color: var(--gray-400);
-    margin-top: 8px;
-    font-size: 1rem;
+    margin-top: 6px;
+    font-size: 0.95rem;
   }
+  .header-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-pdf {
+    background: var(--gray-800);
+    color: var(--orange);
+    border: 1px solid var(--orange);
+  }
+  .btn-pdf:hover { background: var(--orange); color: #000; }
+  .btn-pdf.loading { opacity: 0.7; pointer-events: none; }
+  .btn-reset {
+    background: var(--gray-800);
+    color: var(--gray-200);
+    border: 1px solid var(--gray-600);
+  }
+  .btn-reset:hover { background: var(--gray-700); }
 
   /* Cards */
   .card {
     background: var(--gray-900);
     border: 1px solid var(--gray-700);
     border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
   }
   .card-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     color: var(--orange);
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  /* Grid */
+  /* Grids */
   .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 16px;
   }
   .grid-3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
+    gap: 16px;
   }
-  @media (max-width: 768px) {
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 1000px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
   /* Labels & Inputs */
   label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--gray-400);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     font-weight: 500;
   }
   input[type="number"], input[type="text"] {
     width: 100%;
-    padding: 10px 14px;
+    padding: 9px 12px;
     background: var(--gray-800);
     border: 1px solid var(--gray-600);
-    border-radius: 8px;
+    border-radius: 7px;
     color: #fff;
-    font-size: 1rem;
+    font-size: 0.95rem;
     outline: none;
     transition: border-color 0.2s;
   }
   input:focus { border-color: var(--orange); }
-  .input-group {
-    margin-bottom: 16px;
-  }
+  .input-group { margin-bottom: 12px; }
   .input-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
   .input-row input { flex: 1; }
   .currency-badge {
     background: var(--gray-700);
-    padding: 10px 14px;
-    border-radius: 8px;
+    padding: 9px 12px;
+    border-radius: 7px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--orange);
     white-space: nowrap;
   }
 
   /* Slider */
-  .slider-container {
-    margin: 20px 0;
-  }
+  .slider-container { margin: 16px 0 8px; }
   .slider-container .slider-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   .slider-header .value {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--orange);
   }
   input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
-    height: 6px;
+    height: 5px;
     background: var(--gray-700);
     border-radius: 3px;
     outline: none;
   }
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--orange);
     cursor: pointer;
@@ -152,102 +189,119 @@
     box-shadow: 0 0 8px rgba(247,147,26,0.4);
   }
   input[type="range"]::-moz-range-thumb {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--orange);
     cursor: pointer;
     border: 2px solid var(--gray-900);
   }
 
-  /* Projection card */
+  /* Projection cards */
   .projection-card {
     background: var(--gray-800);
     border: 1px solid var(--gray-700);
     border-radius: 10px;
-    padding: 20px;
+    padding: 16px;
   }
-  .projection-card.x { border-left: 4px solid #3b82f6; }
-  .projection-card.y { border-left: 4px solid #a855f7; }
+  .projection-card.x { border-left: 4px solid var(--blue); }
+  .projection-card.y { border-left: 4px solid var(--purple); }
   .projection-card h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .projection-card.x h3 { color: #60a5fa; }
   .projection-card.y h3 { color: #c084fc; }
 
-  /* Results */
+  /* Product Summary card */
+  .product-card {
+    background: var(--gray-800);
+    border: 1px solid var(--gray-700);
+    border-radius: 10px;
+    padding: 16px;
+    border-left: 4px solid var(--teal);
+  }
+  .product-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #34d399;
+  }
+  .product-card .input-group input {
+    background: rgba(20, 184, 156, 0.05);
+    border-color: rgba(20, 184, 156, 0.2);
+  }
+  .product-card .input-group input:focus {
+    border-color: var(--teal);
+  }
+
+  /* Results inside projection cards */
   .result-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 16px;
+    gap: 10px;
+    margin-top: 12px;
   }
-  @media (max-width: 600px) { .result-grid { grid-template-columns: 1fr; } }
-
   .result-item {
-    background: var(--gray-800);
-    border-radius: 8px;
-    padding: 14px 16px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 7px;
+    padding: 10px 12px;
     text-align: center;
   }
   .result-item .label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--gray-400);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    letter-spacing: 0.4px;
+    margin-bottom: 3px;
   }
   .result-item .value {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
     font-weight: 700;
   }
   .result-item .value.positive { color: var(--green); }
   .result-item .value.negative { color: var(--red); }
   .result-item .sub {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--gray-400);
     margin-top: 2px;
   }
 
   /* Comparison Bar */
-  .comparison-section {
-    margin-top: 20px;
-  }
+  .comparison-section { margin-top: 16px; }
   .comparison-bar {
     display: flex;
-    height: 40px;
+    height: 36px;
     border-radius: 8px;
     overflow: hidden;
-    margin-top: 8px;
+    margin-top: 6px;
   }
   .comparison-bar .bar-x {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    background: linear-gradient(135deg, var(--blue), #2563eb);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     transition: width 0.4s ease;
   }
   .comparison-bar .bar-y {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    background: linear-gradient(135deg, var(--purple), #7c3aed);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     transition: width 0.4s ease;
   }
-
   .comparison-labels {
     display: flex;
     justify-content: space-between;
-    margin-top: 6px;
-    font-size: 0.8rem;
+    margin-top: 4px;
+    font-size: 0.75rem;
   }
   .comparison-labels .label-x { color: #60a5fa; }
   .comparison-labels .label-y { color: #c084fc; }
@@ -260,14 +314,14 @@
     background: linear-gradient(135deg, rgba(247,147,26,0.1), rgba(247,147,26,0.05));
     border: 1px solid rgba(247,147,26,0.2);
     border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 20px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
-  .btc-price-bar .label { font-size: 0.85rem; color: var(--gray-400); }
+  .btc-price-bar .label { font-size: 0.82rem; color: var(--gray-400); }
   .btc-price-bar .price {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--orange);
   }
@@ -275,68 +329,60 @@
     background: transparent;
     border: 1px solid var(--orange);
     color: var(--orange);
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     transition: all 0.2s;
   }
-  .btc-price-bar .update-btn:hover {
-    background: var(--orange);
-    color: #000;
-  }
+  .btc-price-bar .update-btn:hover { background: var(--orange); color: #000; }
 
   /* Converter */
-  .converter-section {
-    margin-top: 20px;
-  }
+  .converter-section { margin-top: 16px; }
   .converter-row {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
     flex-wrap: wrap;
   }
-  .converter-row .conv-input { flex: 1; min-width: 150px; }
+  .converter-row .conv-input { flex: 1; min-width: 140px; }
   .conv-swap {
     background: var(--gray-700);
     border: none;
     color: var(--orange);
-    font-size: 1.2rem;
-    padding: 10px 14px;
-    border-radius: 8px;
+    font-size: 1.1rem;
+    padding: 9px 12px;
+    border-radius: 7px;
     cursor: pointer;
     transition: background 0.2s;
   }
   .conv-swap:hover { background: var(--gray-600); }
 
-  /* Footer */
-  .footer {
-    text-align: center;
-    padding: 30px 0;
-    color: var(--gray-600);
-    font-size: 0.8rem;
-    border-top: 1px solid var(--gray-700);
-    margin-top: 30px;
+  /* Product Summary Results */
+  .product-results {
+    margin-top: 12px;
   }
-  .footer a { color: var(--orange); text-decoration: none; }
-
-  /* Error */
-  .error-msg {
-    color: var(--red);
-    font-size: 0.85rem;
-    margin-top: 4px;
+  .product-results .result-item {
+    background: rgba(20, 184, 156, 0.06);
   }
+  .product-results .result-item.highlight {
+    background: rgba(20, 184, 156, 0.12);
+    border: 1px solid rgba(20, 184, 156, 0.25);
+  }
+  .product-results .result-item .value.teal { color: var(--teal); }
 
+  /* Badges */
   .badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 2px 7px;
     border-radius: 4px;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
   }
   .badge-x { background: rgba(59,130,246,0.2); color: #60a5fa; }
   .badge-y { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .badge-p { background: rgba(20,184,156,0.2); color: #34d399; }
 
   .winner-badge {
     display: inline-block;
@@ -350,31 +396,119 @@
   .winner-badge.tie { background: rgba(247,147,26,0.2); color: var(--orange); border: 1px solid rgba(247,147,26,0.3); }
 
   .note {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--gray-400);
     margin-top: 12px;
-    padding: 12px;
+    padding: 10px 14px;
     background: var(--gray-800);
     border-radius: 8px;
     border-left: 3px solid var(--orange);
   }
+
+  .footer {
+    text-align: center;
+    padding: 24px 0;
+    color: var(--gray-600);
+    font-size: 0.78rem;
+    border-top: 1px solid var(--gray-700);
+    margin-top: 24px;
+  }
+  .footer a { color: var(--orange); text-decoration: none; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--gray-700);
+    margin: 12px 0;
+  }
+
+  /* Print / PDF styling */
+  @media print {
+    body { background: #fff; color: #111; padding: 10px; }
+    .container { max-width: 100%; }
+    .btn, .btn-pdf, .btn-reset, .conv-swap, .update-btn, .header-actions { display: none !important; }
+    .card, .projection-card, .product-card, .btc-price-bar { 
+      background: #fff; 
+      border-color: #ccc; 
+      box-shadow: none;
+      break-inside: avoid;
+    }
+    .btc-price-bar { border: 1px solid #f7931a; }
+    .btc-price-bar .price { color: #f7931a; }
+    .card-title { color: #f7931a; }
+    .projection-card.x { border-left: 4px solid var(--blue); }
+    .projection-card.y { border-left: 4px solid var(--purple); }
+    .product-card { border-left: 4px solid var(--teal); }
+    input[type="number"], input[type="text"] {
+      background: #f5f5f5;
+      border-color: #ddd;
+      color: #111;
+    }
+    .result-item { background: #f9f9f9; }
+    .product-results .result-item { background: rgba(20,184,156,0.06); }
+    .slider-header .value { color: #f7931a; }
+    input[type="range"] { background: #ddd; }
+    .currency-badge { background: #eee; color: #f7931a; }
+    .header { border-bottom-color: #ddd; }
+    .note { background: #f9f9f9; border-left-color: #f7931a; color: #555; }
+    .footer { border-top-color: #ddd; color: #888; }
+    .comparison-bar .bar-x { background: #3b82f6; }
+    .comparison-bar .bar-y { background: #a855f7; }
+    .winner-badge.x { background: rgba(59,130,246,0.15); }
+    .winner-badge.y { background: rgba(168,85,247,0.15); }
+    .winner-badge.tie { background: rgba(247,147,26,0.15); }
+    .card, .projection-card, .product-card { margin-bottom: 10px; }
+    .header h1 { font-size: 1.5rem; }
+  }
+
+  /* PDF loading overlay */
+  #pdfOverlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #pdfOverlay.show { display: flex; }
+  #pdfOverlay .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid var(--gray-700);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #pdfOverlay .text { color: #fff; font-size: 1rem; }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div id="pdfOverlay">
+  <div class="spinner"></div>
+  <div class="text">Generating PDF...</div>
+</div>
+
+<div class="container" id="pdfContent">
 
   <!-- Header -->
   <div class="header">
     <h1>₿ <span>BTC ROI</span> Projection</h1>
-    <p>Compare two investment scenarios &mdash; calculated in Bitcoin terms</p>
+    <p>Compare investment scenarios &amp; product launch costs — calculated in Bitcoin terms</p>
+    <div class="header-actions">
+      <button class="btn btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
+      <button class="btn btn-reset" onclick="resetAll()">↺ Reset All</button>
+    </div>
   </div>
 
   <!-- Live BTC Price -->
   <div class="btc-price-bar" id="btcPriceBar">
     <span class="label">Live BTC Price</span>
     <span class="price" id="btcPriceDisplay">—</span>
-    <span style="color:var(--gray-400); font-size:0.85rem;" id="btcPriceMYR">—</span>
+    <span style="color:var(--gray-400); font-size:0.82rem;" id="btcPriceMYR">—</span>
     <button class="update-btn" onclick="refreshBTCPrice()">↻ Refresh</button>
   </div>
 
@@ -408,14 +542,15 @@
         <span class="value" id="yearsDisplay">5 years</span>
       </div>
       <input type="range" id="yearsSlider" min="1" max="15" value="5" step="0.5" oninput="calculate()">
-      <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--gray-600);margin-top:4px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--gray-600);margin-top:3px;">
         <span>1 yr</span><span>5 yrs</span><span>10 yrs</span><span>15 yrs</span>
       </div>
     </div>
   </div>
 
-  <!-- Two Projections -->
-  <div class="grid-2">
+  <!-- Three Columns: X | Y | Product Summary -->
+  <div class="grid-3">
+
     <!-- Projection X -->
     <div class="projection-card x">
       <h3>📈 Projection <span class="badge badge-x">X</span></h3>
@@ -475,14 +610,102 @@
         </div>
       </div>
     </div>
+
+    <!-- Product Summary -->
+    <div class="product-card">
+      <h3>📦 Product Summary <span class="badge badge-p">Launch</span></h3>
+      <div class="input-group">
+        <label>Product / Business Name</label>
+        <input type="text" id="productName" value="Friend's Business" oninput="calculateProduct()">
+      </div>
+      <div class="input-group">
+        <label>Cost of Goods Sold (COGS) — RM</label>
+        <div class="input-row">
+          <span class="currency-badge">RM</span>
+          <input type="number" id="cogs" value="15000" min="0" step="500" oninput="calculateProduct()">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Monthly Overhead (rent, ops, salaries) — RM</label>
+        <div class="input-row">
+          <span class="currency-badge">RM</span>
+          <input type="number" id="overhead" value="3000" min="0" step="100" oninput="calculateProduct()">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Marketing &amp; Launch Budget — RM</label>
+        <div class="input-row">
+          <span class="currency-badge">RM</span>
+          <input type="number" id="marketing" value="5000" min="0" step="500" oninput="calculateProduct()">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Other Upfront Costs (equipment, legal, etc.) — RM</label>
+        <div class="input-row">
+          <span class="currency-badge">RM</span>
+          <input type="number" id="otherCosts" value="7000" min="0" step="500" oninput="calculateProduct()">
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="input-group">
+        <label>Projected Monthly Revenue — RM</label>
+        <div class="input-row">
+          <span class="currency-badge">RM</span>
+          <input type="number" id="monthlyRevenue" value="12000" min="0" step="500" oninput="calculateProduct()">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Projected Monthly Revenue Growth (%)</label>
+        <div class="input-row">
+          <input type="number" id="revenueGrowth" value="5" min="0" max="100" step="1" oninput="calculateProduct()">
+          <span class="currency-badge">%</span>
+        </div>
+      </div>
+
+      <!-- Product Results -->
+      <div class="product-results">
+        <div class="result-grid">
+          <div class="result-item highlight">
+            <div class="label">Total Upfront Cost</div>
+            <div class="value teal" id="totalUpfront">—</div>
+          </div>
+          <div class="result-item highlight">
+            <div class="label">Monthly Recurring</div>
+            <div class="value" style="color:var(--red);" id="monthlyRecurring">—</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Monthly Net (Year 1)</div>
+            <div class="value" id="monthlyNet">—</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Breakeven</div>
+            <div class="value" style="color:var(--green);" id="breakeven">—</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Annual Net Profit</div>
+            <div class="value" id="annualNetProfit">—</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Profit Margin</div>
+            <div class="value" id="profitMargin">—</div>
+          </div>
+        </div>
+        <div class="result-grid" style="grid-template-columns:1fr;margin-top:8px;">
+          <div class="result-item highlight">
+            <div class="label">Total Investment Needed (incl. runway)</div>
+            <div class="value teal" id="totalCapitalNeeded">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Comparison & Winner -->
   <div class="card">
     <div class="card-title">⚖️ Head-to-Head Comparison</div>
     <div class="comparison-section">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
-        <span style="font-size:0.9rem;color:var(--gray-400);">Projection X vs Projection Y — Final Value (RM)</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+        <span style="font-size:0.85rem;color:var(--gray-400);">Projection X vs Projection Y — Final Value (RM)</span>
         <span id="winnerBadge"></span>
       </div>
       <div class="comparison-bar" id="comparisonBar">
@@ -494,7 +717,7 @@
         <span class="label-y" id="compLabelY">Y: RM —</span>
       </div>
     </div>
-    <div class="result-grid" style="margin-top:16px;">
+    <div class="result-grid" style="margin-top:12px;">
       <div class="result-item">
         <div class="label">Projected BTC Gain</div>
         <div class="value" style="color:var(--orange);" id="btcGainX">—</div>
@@ -533,15 +756,38 @@
           <input type="number" id="convBtc" step="any" oninput="convBtcToMyr()">
         </div>
       </div>
-      <div style="margin-top:10px;font-size:0.85rem;color:var(--gray-400);text-align:center;">
+      <div style="margin-top:8px;font-size:0.82rem;color:var(--gray-400);text-align:center;">
         <span id="convRate">1 BTC = RM —</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Row -->
+  <div class="card">
+    <div class="card-title">📋 Investment Summary</div>
+    <div class="result-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+      <div class="result-item">
+        <div class="label">Investment (RM)</div>
+        <div class="value positive" id="summaryInvestment">—</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Time Horizon</div>
+        <div class="value" style="color:var(--orange);" id="summaryYears">—</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Best Projection (X/Y)</div>
+        <div class="value positive" id="summaryBest">—</div>
+      </div>
+      <div class="result-item">
+        <div class="label">In BTC Equivalent</div>
+        <div class="value" style="color:var(--orange);" id="summaryBtc">—</div>
       </div>
     </div>
   </div>
 
   <!-- Disclaimer -->
   <div class="note">
-    <strong>⚠️ Disclaimer:</strong> This calculator is for <strong>educational and illustrative purposes only</strong>. Past performance does not guarantee future results. Bitcoin price is volatile — the MYR/BTC conversion uses the current market rate and is not a prediction of future Bitcoin value. Always consult a licensed financial advisor before making investment decisions. I am not your financial advisor.
+    <strong>⚠️ Disclaimer:</strong> This calculator is for <strong>educational and illustrative purposes only</strong>. Past performance does not guarantee future results. Bitcoin price is volatile — the MYR/BTC conversion uses the current market rate and is not a prediction of future Bitcoin value. Product cost projections are estimates based on user input. Always consult a licensed financial advisor before making investment decisions. I am not your financial advisor.
   </div>
 
   <div class="footer">
@@ -558,6 +804,7 @@ let btcPriceMYR = 266314;
 async function init() {
   await refreshBTCPrice();
   calculate();
+  calculateProduct();
   convMyrToBtc();
 }
 init();
@@ -576,6 +823,7 @@ async function refreshBTCPrice() {
     document.getElementById('btcPriceMYR').textContent = 'RM ' + btcPriceMYR.toLocaleString('en-MY', {maximumFractionDigits:0});
     document.getElementById('convRate').textContent = '1 BTC = RM ' + btcPriceMYR.toLocaleString('en-MY', {maximumFractionDigits:0});
     calculate();
+    calculateProduct();
     convMyrToBtc();
   } catch(e) {
     document.getElementById('btcPriceDisplay').textContent = '⚠️ Error';
@@ -584,7 +832,7 @@ async function refreshBTCPrice() {
   btn.disabled = false;
 }
 
-// ── Main Calculation ──
+// ── Main Calculation (X & Y) ──
 function calculate() {
   const investment = parseFloat(document.getElementById('investment').value) || 0;
   const years = parseFloat(document.getElementById('yearsSlider').value) || 1;
@@ -607,8 +855,8 @@ function calculate() {
   const roiX = investment > 0 ? ((fvX - investment) / investment) * 100 : 0;
   const roiY = investment > 0 ? ((fvY - investment) / investment) * 100 : 0;
 
-  const annualRoiX = years > 0 ? (Math.pow(fvX / investment, 1 / years) - 1) * 100 : 0;
-  const annualRoiY = years > 0 ? (Math.pow(fvY / investment, 1 / years) - 1) * 100 : 0;
+  const annualRoiX = years > 0 && investment > 0 ? (Math.pow(fvX / investment, 1 / years) - 1) * 100 : 0;
+  const annualRoiY = years > 0 && investment > 0 ? (Math.pow(fvY / investment, 1 / years) - 1) * 100 : 0;
 
   const diffRm = fvY - fvX;
   const diffBtc = btcY - btcX;
@@ -616,11 +864,11 @@ function calculate() {
   const btcGainX = btcX - initBtc;
   const btcGainY = btcY - initBtc;
 
-  // Format helpers
-  const fmtRm = (v) => 'RM ' + v.toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
-  const fmtPct = (v) => (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
-  const fmtBtc = (v) => v.toFixed(6) + ' BTC';
-  const fmtBtcShort = (v) => v.toFixed(8) + ' BTC';
+  // Formatters
+  const fmtRm = (v) => 'RM ' + Number(v).toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fmtPct = (v) => (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
+  const fmtBtc = (v) => Number(v).toFixed(6) + ' BTC';
+  const fmtBtcShort = (v) => Number(v).toFixed(8) + ' BTC';
 
   function setVal(id, val, cls) {
     const el = document.getElementById(id);
@@ -648,9 +896,9 @@ function calculate() {
   const pctY = total > 0 ? (fvY / total) * 100 : 50;
 
   document.getElementById('barX').style.width = pctX + '%';
-  document.getElementById('barX').textContent = 'X: ' + fmtRm(fvX);
+  document.getElementById('barX').textContent = pctX > 15 ? 'X: ' + fmtRm(fvX) : 'X';
   document.getElementById('barY').style.width = pctY + '%';
-  document.getElementById('barY').textContent = 'Y: ' + fmtRm(fvY);
+  document.getElementById('barY').textContent = pctY > 15 ? 'Y: ' + fmtRm(fvY) : 'Y';
 
   document.getElementById('compLabelX').textContent = 'X: ' + fmtRm(fvX);
   document.getElementById('compLabelY').textContent = 'Y: ' + fmtRm(fvY);
@@ -667,6 +915,72 @@ function calculate() {
 
   document.getElementById('btcGainSubX').textContent = 'Projection X: ' + fmtBtcShort(btcGainX) + ' gain';
   document.getElementById('btcGainSubY').textContent = 'Projection Y: ' + fmtBtcShort(btcGainY) + ' gain';
+
+  // Summary row
+  document.getElementById('summaryInvestment').textContent = fmtRm(investment);
+  document.getElementById('summaryYears').textContent = years + ' yr' + (years !== 1 ? 's' : '');
+  document.getElementById('summaryBest').textContent = fvX >= fvY ? fmtRm(fvX) + ' (X)' : fmtRm(fvY) + ' (Y)';
+  document.getElementById('summaryBtc').textContent = fmtBtc(btcPriceMYR > 0 ? investment / btcPriceMYR : 0);
+}
+
+// ── Product Summary Calculation ──
+function calculateProduct() {
+  const cogs = parseFloat(document.getElementById('cogs').value) || 0;
+  const overhead = parseFloat(document.getElementById('overhead').value) || 0;
+  const marketing = parseFloat(document.getElementById('marketing').value) || 0;
+  const otherCosts = parseFloat(document.getElementById('otherCosts').value) || 0;
+  const monthlyRevenue = parseFloat(document.getElementById('monthlyRevenue').value) || 0;
+  const revenueGrowth = parseFloat(document.getElementById('revenueGrowth').value) || 0;
+
+  const totalUpfront = cogs + marketing + otherCosts;
+  const monthlyRecurring = overhead;
+
+  // Calculate year-1 monthly net (average, including growth)
+  let totalYearRevenue = 0;
+  for (let m = 0; m < 12; m++) {
+    totalYearRevenue += monthlyRevenue * Math.pow(1 + revenueGrowth / 100, m);
+  }
+  const avgMonthlyRevenue = totalYearRevenue / 12;
+  const avgMonthlyNet = avgMonthlyRevenue - monthlyRecurring;
+  const annualNetProfit = totalYearRevenue - (monthlyRecurring * 12);
+
+  // Breakeven (months) - upfront cost divided by monthly net
+  const monthlyNetFirst = monthlyRevenue - monthlyRecurring;
+  const breakeven = monthlyNetFirst > 0 ? Math.ceil(totalUpfront / monthlyNetFirst) : '∞';
+
+  // Profit margin
+  const profitMargin = totalYearRevenue > 0 ? (annualNetProfit / totalYearRevenue) * 100 : 0;
+
+  // Total capital needed (upfront + 6 months runway)
+  const totalCapitalNeeded = totalUpfront + (monthlyRecurring * 6);
+
+  const fmtRm = (v) => 'RM ' + Number(v).toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fmtPct = (v) => Number(v).toFixed(1) + '%';
+
+  function setVal(id, val, cls) {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    el.className = 'value' + (cls ? ' ' + cls : '');
+  }
+
+  document.getElementById('totalUpfront').textContent = fmtRm(totalUpfront);
+  document.getElementById('monthlyRecurring').textContent = fmtRm(monthlyRecurring);
+  document.getElementById('monthlyNet').textContent = fmtRm(avgMonthlyNet);
+  document.getElementById('monthlyNet').className = 'value' + (avgMonthlyNet >= 0 ? ' positive' : ' negative');
+  document.getElementById('annualNetProfit').textContent = fmtRm(annualNetProfit);
+  document.getElementById('annualNetProfit').className = 'value' + (annualNetProfit >= 0 ? ' positive' : ' negative');
+  document.getElementById('profitMargin').textContent = fmtPct(profitMargin);
+  document.getElementById('profitMargin').className = 'value' + (profitMargin >= 0 ? ' positive' : ' negative');
+
+  if (typeof breakeven === 'number') {
+    document.getElementById('breakeven').textContent = breakeven + ' months';
+    document.getElementById('breakeven').className = 'value positive';
+  } else {
+    document.getElementById('breakeven').textContent = '∞ (not profitable)';
+    document.getElementById('breakeven').className = 'value negative';
+  }
+
+  document.getElementById('totalCapitalNeeded').textContent = fmtRm(totalCapitalNeeded);
 }
 
 // ── Converter ──
@@ -685,13 +999,59 @@ function swapConverter() {
   const btc = document.getElementById('convBtc').value;
   document.getElementById('convMyr').value = btc;
   document.getElementById('convBtc').value = myr;
-  // Trigger correct conversion
-  const src = document.activeElement;
-  if (src === document.getElementById('convMyr') || src === document.getElementById('convBtc')) {
-    // use whichever was focused
-  } else {
-    convMyrToBtc();
+  convMyrToBtc();
+}
+
+// ── Reset All ──
+function resetAll() {
+  document.getElementById('investment').value = 50000;
+  document.getElementById('yearsSlider').value = 5;
+  document.getElementById('rateX').value = 12;
+  document.getElementById('rateY').value = 20;
+  document.getElementById('productName').value = "Friend's Business";
+  document.getElementById('cogs').value = 15000;
+  document.getElementById('overhead').value = 3000;
+  document.getElementById('marketing').value = 5000;
+  document.getElementById('otherCosts').value = 7000;
+  document.getElementById('monthlyRevenue').value = 12000;
+  document.getElementById('revenueGrowth').value = 5;
+  calculate();
+  calculateProduct();
+  convMyrToBtc();
+}
+
+// ── Export PDF ──
+async function exportPDF() {
+  const btn = document.querySelector('.btn-pdf');
+  const overlay = document.getElementById('pdfOverlay');
+  
+  btn.classList.add('loading');
+  btn.textContent = '⏳ Generating...';
+  overlay.classList.add('show');
+
+  try {
+    const element = document.getElementById('pdfContent');
+    const opt = {
+      margin:       [10, 10, 10, 10],
+      filename:     'btc-roi-projection.pdf',
+      image:        { type: 'jpeg', quality: 0.95 },
+      html2canvas:  { 
+        scale: 2, 
+        useCORS: true,
+        letterRendering: true,
+        backgroundColor: '#fff'
+      },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    await html2pdf().set(opt).from(element).save();
+  } catch(e) {
+    console.error('PDF error:', e);
+    alert('PDF generation failed. Please try again or use Ctrl+P to print.');
   }
+
+  overlay.classList.remove('show');
+  btn.classList.remove('loading');
+  btn.textContent = '📄 Export PDF';
 }
 </script>
 </body>
