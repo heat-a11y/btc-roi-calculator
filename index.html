@@ -120,6 +120,75 @@
   @media (max-width: 1000px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
+  /* Mobile responsiveness */
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    .container { max-width: 100%; }
+    .header { padding: 20px 10px 16px; }
+    .header h1 { font-size: 1.3rem; }
+    .header p { font-size: 0.82rem; }
+    .card { padding: 14px; margin-bottom: 10px; }
+    .card-title { font-size: 0.92rem; margin-bottom: 10px; }
+    .projection-card, .product-card { padding: 12px; }
+    .projection-card h3, .product-card h3 { font-size: 0.9rem; }
+    
+    /* Tighter inputs */
+    .input-group { margin-bottom: 8px; }
+    input[type="number"], input[type="text"] { padding: 8px 10px; font-size: 0.88rem; }
+    .currency-badge { padding: 8px 10px; font-size: 0.8rem; }
+    label { font-size: 0.75rem; }
+    
+    /* Result grids 2-col on mobile */
+    .result-grid { gap: 6px; }
+    .result-item { padding: 8px 6px; }
+    .result-item .value { font-size: 0.95rem; }
+    .result-item .label { font-size: 0.62rem; }
+    
+    /* Price bar wraps fine already */
+    .btc-price-bar { padding: 8px 12px; font-size: 0.82rem; flex-wrap: wrap; }
+    .btc-price-bar .price { font-size: 0.9rem; }
+    
+    /* Slider */
+    .slider-container { margin: 10px 0 4px; }
+    .slider-header .value { font-size: 1rem; }
+    
+    /* Hide some less critical elements on tiny screens */
+    .comparison-bar { height: 30px; }
+    .comparison-bar .bar-x, .comparison-bar .bar-y { font-size: 0.65rem; }
+    
+    /* Chart */
+    #growthChart { height: 200px !important; }
+    
+    /* Converter */
+    .converter-row { gap: 6px; }
+    .converter-row .conv-input { min-width: 100px; }
+    .conv-swap { padding: 8px 10px; font-size: 1rem; }
+    
+    /* Summary */
+    .result-grid[style*="grid-template-columns:1fr 1fr 1fr 1fr"] { 
+      grid-template-columns: 1fr 1fr !important; 
+    }
+    
+    /* Buttons */
+    .btn { padding: 8px 14px; font-size: 0.8rem; }
+    
+    /* Disclaimer */
+    .note { font-size: 0.7rem; padding: 8px 10px; }
+    
+    /* Product results */
+    .product-results .result-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+
+  @media (max-width: 400px) {
+    .header h1 { font-size: 1.1rem; }
+    .result-item .value { font-size: 0.82rem; }
+    input[type="number"], input[type="text"] { font-size: 0.82rem; }
+    .grid-3 { gap: 8px; }
+    .grid-2 { gap: 8px; }
+    .header-actions { flex-direction: column; align-items: center; }
+    .btn { width: 100%; justify-content: center; }
+  }
+
   /* Labels & Inputs */
   label {
     display: block;
@@ -775,7 +844,7 @@
   <div class="card">
     <div class="card-title">📈 Growth Comparison — X vs Y Over Time</div>
     <div style="position:relative;">
-      <canvas id="growthChart" width="1060" height="320" style="width:100%;height:auto;max-width:1060px;background:var(--gray-800);border-radius:8px;display:block;margin:0 auto;"></canvas>
+      <canvas id="growthChart" width="800" height="280" style="width:100%;height:auto;max-width:100%;background:var(--gray-800);border-radius:8px;display:block;margin:0 auto;"></canvas>
     </div>
     <div style="display:flex;justify-content:center;gap:30px;margin-top:10px;font-size:0.85rem;flex-wrap:wrap;">
       <span><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Projection X</span>
@@ -990,6 +1059,19 @@ function calculate() {
   drawGrowthChart(investment, rateX, rateY, years);
 }
 
+// ── Redraw chart on window resize (debounced) ──
+let resizeTimer;
+window.addEventListener('resize', function() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function() {
+    const investment = parseFloat(document.getElementById('investment').value) || 0;
+    const years = parseFloat(document.getElementById('yearsSlider').value) || 1;
+    const rateX = parseFloat(document.getElementById('rateX').value) || 0;
+    const rateY = parseFloat(document.getElementById('rateY').value) || 0;
+    drawGrowthChart(investment, rateX, rateY, years);
+  }, 250);
+});
+
 // ── Product Summary Calculation ──
 function calculateProduct() {
   const cogs = parseFloat(document.getElementById('cogs').value) || 0;
@@ -1066,12 +1148,26 @@ function calculateProduct() {
 function drawGrowthChart(investment, rateX, rateY, years) {
   const canvas = document.getElementById('growthChart');
   if (!canvas) return;
+  // Make canvas resolution match display size for sharp rendering
+  const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : { width: 800 };
+  const containerWidth = Math.min(rect.width - 4, 800);
+  const dpr = window.devicePixelRatio || 1;
+  const w = containerWidth * dpr;
+  const h = 280 * dpr;
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.width = containerWidth + 'px';
+  canvas.style.height = '280px';
   const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-  const pad = { top: 30, bottom: 40, left: 70, right: 30 };
-  const chartW = w - pad.left - pad.right;
-  const chartH = h - pad.top - pad.bottom;
+  ctx.scale(dpr, dpr);
+  // Use CSS pixel coordinates for drawing
+  const cw = containerWidth;
+  const ch = 280;
+  // Reduce padding on small screens
+  const isMobile = cw < 500;
+  const pad = { top: isMobile ? 20 : 30, bottom: isMobile ? 30 : 40, left: isMobile ? 50 : 70, right: isMobile ? 15 : 30 };
+  const chartW = cw - pad.left - pad.right;
+  const chartH = ch - pad.top - pad.bottom;
 
   // Compute data points (yearly)
   const steps = Math.max(Math.ceil(years), 1);
@@ -1089,13 +1185,13 @@ function drawGrowthChart(investment, rateX, rateY, years) {
   }
   maxVal = Math.ceil(maxVal * 1.15 / 10000) * 10000;
 
-  ctx.clearRect(0, 0, w, h);
+  ctx.clearRect(0, 0, cw, ch);
 
   // Grid lines
   const gridLines = 5;
   ctx.strokeStyle = 'rgba(255,255,255,0.06)';
   ctx.lineWidth = 1;
-  ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = (isMobile ? '9px' : '11px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.fillStyle = '#888';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
@@ -1104,21 +1200,22 @@ function drawGrowthChart(investment, rateX, rateY, years) {
     const y = pad.top + chartH - (chartH * i / gridLines);
     ctx.beginPath();
     ctx.moveTo(pad.left, y);
-    ctx.lineTo(w - pad.right, y);
+    ctx.lineTo(cw - pad.right, y);
     ctx.stroke();
-    ctx.fillText('RM ' + Math.round(val).toLocaleString('en-MY'), pad.left - 8, y);
+    ctx.fillText('RM ' + Math.round(val).toLocaleString('en-MY'), pad.left - 5, y);
   }
 
   // X axis labels
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
+  ctx.font = (isMobile ? '8px' : '11px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
   const xStep = steps > 10 ? Math.ceil(steps / 10) : 1;
   for (let y = 0; y <= steps; y += xStep) {
     const t = (y / steps) * years;
     const x = pad.left + (t / years) * chartW;
-    ctx.fillText(Number(t).toFixed(t % 1 === 0 ? 0 : 1) + 'yr', x, h - pad.bottom + 8);
+    ctx.fillText(Number(t).toFixed(t % 1 === 0 ? 0 : 1) + 'yr', x, ch - pad.bottom + 8);
   }
-  ctx.fillText('Time', w / 2, h - pad.bottom + 24);
+  ctx.fillText('Time', cw / 2, ch - pad.bottom + 24);
 
   function drawLine(data, color, dashed) {
     ctx.beginPath();
@@ -1154,7 +1251,7 @@ function drawGrowthChart(investment, rateX, rateY, years) {
   ctx.setLineDash([6, 4]);
   const initY = pad.top + chartH - (investment / maxVal) * chartH;
   ctx.moveTo(pad.left, initY);
-  ctx.lineTo(w - pad.right, initY);
+  ctx.lineTo(cw - pad.right, initY);
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.fillStyle = '#F7931A';
@@ -1169,7 +1266,7 @@ function drawGrowthChart(investment, rateX, rateY, years) {
   // End labels
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-  ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = (isMobile ? '8px' : '10px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
   const lastX = dataX[dataX.length - 1];
   const lx = pad.left + (lastX.t / years) * chartW + 8;
   const ly = pad.top + chartH - (lastX.v / maxVal) * chartH - 8;
