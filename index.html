@@ -494,7 +494,7 @@
 
   /* Print / PDF styling — A4 landscape */
   @media print {
-    @page { size: A4 landscape; margin: 12mm; }
+    @page { size: A4 landscape; margin: 10mm; }
     body { background: #fff !important; color: #111 !important; padding: 0 !important; margin: 0 !important; }
     .container { max-width: 100% !important; padding: 0 !important; }
     .btn, .btn-pdf, .btn-reset, .conv-swap, .update-btn, .header-actions { display: none !important; }
@@ -502,69 +502,119 @@
     /* Force all cards to light background */
     .card, .projection-card, .product-card, .btc-price-bar { 
       background: #fff !important; 
-      border-color: #ccc !important; 
+      border-color: #bbb !important; 
       box-shadow: none !important;
       break-inside: avoid;
       page-break-inside: avoid;
     }
     .btc-price-bar { border: 1px solid #f7931a !important; }
     .btc-price-bar .price { color: #f7931a !important; }
+    .btc-price-bar .label { color: #666 !important; }
     .card-title { color: #f7931a !important; }
     .projection-card.x { border-left: 4px solid #3b82f6 !important; }
     .projection-card.y { border-left: 4px solid #a855f7 !important; }
     .product-card { border-left: 4px solid #14b89c !important; }
+    .product-card .input-group input { background: #f5f5f5 !important; border-color: #ddd !important; }
     
+    /* Inputs */
     input[type="number"], input[type="text"] {
       background: #f5f5f5 !important;
       border-color: #ddd !important;
       color: #111 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
-    .result-item { background: #f9f9f9 !important; }
+    input[type="range"] { 
+      background: #ddd !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    input[type="range"]::-webkit-slider-thumb { 
+      background: #f7931a !important; 
+      border: 2px solid #fff !important;
+    }
+    
+    /* Result items */
+    .result-item { background: #f5f5f5 !important; }
+    .result-item .value.positive { color: #059669 !important; }
+    .result-item .value.negative { color: #dc2626 !important; }
     .product-results .result-item { background: rgba(20,184,156,0.06) !important; }
+    .product-results .result-item.highlight { background: rgba(20,184,156,0.1) !important; border: 1px solid rgba(20,184,156,0.2) !important; }
+    
+    /* Colors */
     .slider-header .value { color: #f7931a !important; }
-    input[type="range"] { background: #ddd !important; }
     .currency-badge { background: #eee !important; color: #f7931a !important; }
-    .header { border-bottom-color: #ddd !important; padding: 10px 0 15px !important; }
-    .header h1 { font-size: 1.4rem !important; }
-    .note { background: #f9f9f9 !important; border-left-color: #f7931a !important; color: #555 !important; }
+    .header { border-bottom-color: #ddd !important; padding: 8px 0 12px !important; }
+    .header h1 { font-size: 1.3rem !important; color: #111 !important; }
+    .header h1 span { color: #f7931a !important; }
+    .header p { font-size: 0.8rem !important; color: #666 !important; }
+    
+    .note { background: #fafafa !important; border-left-color: #f7931a !important; color: #555 !important; }
     .footer { border-top-color: #ddd !important; color: #888 !important; }
-    .comparison-bar .bar-x { background: #3b82f6 !important; }
-    .comparison-bar .bar-y { background: #a855f7 !important; }
-    .winner-badge.x { background: rgba(59,130,246,0.15) !important; }
-    .winner-badge.y { background: rgba(168,85,247,0.15) !important; }
-    .winner-badge.tie { background: rgba(247,147,26,0.15) !important; }
-    .card, .projection-card, .product-card { margin-bottom: 8px !important; padding: 12px 16px !important; }
     
-    /* Make grid columns tighter for landscape */
-    .grid-3 { gap: 10px !important; }
-    .grid-2 { gap: 10px !important; }
-    .result-grid { gap: 6px !important; }
-    .result-item { padding: 6px 8px !important; }
-    .result-item .value { font-size: 1rem !important; }
-    .input-group { margin-bottom: 6px !important; }
-    input[type="number"], input[type="text"] { padding: 5px 8px !important; font-size: 0.82rem !important; }
-    .currency-badge { padding: 5px 8px !important; font-size: 0.78rem !important; }
-    .divider { margin: 6px 0 !important; }
-    .slider-container { margin: 8px 0 4px !important; }
-    .header p { font-size: 0.85rem !important; }
-    label { font-size: 0.72rem !important; }
-    .card-title { font-size: 0.95rem !important; margin-bottom: 8px !important; }
-    .projection-card h3, .product-card h3 { font-size: 0.9rem !important; margin-bottom: 6px !important; }
-    .comparison-section { margin-top: 8px !important; }
-    .comparison-bar { height: 28px !important; }
-    .btc-price-bar { padding: 6px 12px !important; margin-bottom: 8px !important; }
-    .btc-price-bar .price { font-size: 0.95rem !important; }
+    /* Comparison bar */
+    .comparison-bar .bar-x { background: #3b82f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .comparison-bar .bar-y { background: #a855f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     
-    /* Hide non-essential elements */
+    .winner-badge.x { background: rgba(59,130,246,0.15) !important; color: #2563eb !important; border-color: rgba(59,130,246,0.3) !important; }
+    .winner-badge.y { background: rgba(168,85,247,0.15) !important; color: #7c3aed !important; border-color: rgba(168,85,247,0.3) !important; }
+    .winner-badge.tie { background: rgba(247,147,26,0.15) !important; color: #d97706 !important; border-color: rgba(247,147,26,0.3) !important; }
+    
+    .badge-x { background: rgba(59,130,246,0.15) !important; color: #2563eb !important; }
+    .badge-y { background: rgba(168,85,247,0.15) !important; color: #7c3aed !important; }
+    .badge-p { background: rgba(20,184,156,0.15) !important; color: #059669 !important; }
+    
+    .card, .projection-card, .product-card { margin-bottom: 6px !important; padding: 10px 14px !important; }
+    
+    /* Tighter grid for landscape */
+    .grid-3 { gap: 8px !important; }
+    .grid-2 { gap: 8px !important; }
+    .result-grid { gap: 5px !important; }
+    .result-item { padding: 5px 7px !important; }
+    .result-item .value { font-size: 0.9rem !important; }
+    .result-item .label { font-size: 0.6rem !important; }
+    .input-group { margin-bottom: 5px !important; }
+    input[type="number"], input[type="text"] { padding: 4px 7px !important; font-size: 0.78rem !important; }
+    .currency-badge { padding: 4px 7px !important; font-size: 0.72rem !important; }
+    .divider { margin: 5px 0 !important; }
+    .slider-container { margin: 6px 0 3px !important; }
+    label { font-size: 0.68rem !important; }
+    .card-title { font-size: 0.88rem !important; margin-bottom: 6px !important; }
+    .projection-card h3, .product-card h3 { font-size: 0.82rem !important; margin-bottom: 5px !important; }
+    .comparison-section { margin-top: 6px !important; }
+    .comparison-bar { height: 24px !important; }
+    .comparison-bar .bar-x, .comparison-bar .bar-y { font-size: 0.7rem !important; }
+    .btc-price-bar { padding: 5px 10px !important; margin-bottom: 6px !important; }
+    .btc-price-bar .price { font-size: 0.88rem !important; }
+    
+    /* Hide non-essential */
     #pdfOverlay { display: none !important; }
-    .note { font-size: 0.7rem !important; padding: 6px 10px !important; }
-    .footer { padding: 12px 0 !important; font-size: 0.7rem !important; }
-    .slider-container .slider-header .value { font-size: 1rem !important; }
+    .note { font-size: 0.65rem !important; padding: 5px 8px !important; }
+    .footer { padding: 10px 0 !important; font-size: 0.65rem !important; }
+    .slider-container .slider-header .value { font-size: 0.9rem !important; }
     
     /* Charts in print */
     #growthChartRM, #growthChartBTC { max-width: 100% !important; height: auto !important; }
-    img[alt="growthChartRM"], img[alt="growthChartBTC"] { max-width: 100% !important; height: auto !important; }
-    .card:has(#growthChartRM) { break-inside: avoid; page-break-inside: avoid; padding: 8px 12px !important; }
+    img[alt="growthChartRM"], img[alt="growthChartBTC"] { max-width: 100% !important; height: auto !important; display: block !important; }
+    .card:has(#growthChartRM) .grid-2 { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+    
+    /* Ensure chart labels print */
+    canvas { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    
+    /* Product results grid */
+    .product-results .result-grid { grid-template-columns: 1fr 1fr !important; }
+    
+    /* Summary section */
+    .result-grid[style*="grid-template-columns:1fr 1fr 1fr 1fr"] { 
+      grid-template-columns: 1fr 1fr 1fr 1fr !important; 
+    }
+    
+    /* Converter section */
+    .converter-section { margin-top: 8px !important; }
+    .converter-row { gap: 6px !important; }
+    
+    /* Investment summary product detail */
+    .card .result-grid + div[style*="border-top"] { margin-top: 6px !important; padding-top: 6px !important; }
   }
 
   /* PDF loading overlay */
@@ -1157,150 +1207,25 @@ function calculateProduct() {
 
 // ── Draw Growth Comparison Chart ──
 function drawGrowthChartRM(investment, rateX, rateY, years) {
-  const canvas = document.getElementById('growthChartRM');
-  if (!canvas) return;
-  // Make canvas resolution match display size for sharp rendering
-  const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : { width: 800 };
-  const containerWidth = Math.min(rect.width - 4, 800);
-  const dpr = window.devicePixelRatio || 1;
-  const w = containerWidth * dpr;
-  const h = 280 * dpr;
-  canvas.width = w;
-  canvas.height = h;
-  canvas.style.width = containerWidth + 'px';
-  canvas.style.height = '280px';
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  // Use CSS pixel coordinates for drawing
-  const cw = containerWidth;
-  const ch = 280;
-  // Reduce padding on small screens
-  const isMobile = cw < 500;
-  const pad = { top: isMobile ? 20 : 30, bottom: isMobile ? 30 : 40, left: isMobile ? 50 : 70, right: isMobile ? 15 : 30 };
-  const chartW = cw - pad.left - pad.right;
-  const chartH = ch - pad.top - pad.bottom;
-
-  // Compute data points (yearly)
-  const steps = Math.max(Math.ceil(years), 1);
-  const dataX = [];
-  const dataY = [];
-  let maxVal = investment;
-  for (let y = 0; y <= steps; y++) {
-    const t = (y / steps) * years;
-    const vx = investment * Math.pow(1 + rateX / 100, t);
-    const vy = investment * Math.pow(1 + rateY / 100, t);
-    dataX.push({ t, v: vx });
-    dataY.push({ t, v: vy });
-    if (vx > maxVal) maxVal = vx;
-    if (vy > maxVal) maxVal = vy;
-  }
-  maxVal = Math.ceil(maxVal * 1.15 / 10000) * 10000;
-
-  ctx.clearRect(0, 0, cw, ch);
-
-  // Grid lines
-  const gridLines = 5;
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-  ctx.lineWidth = 1;
-  ctx.font = (isMobile ? '9px' : '11px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.fillStyle = '#888';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  for (let i = 0; i <= gridLines; i++) {
-    const val = (maxVal / gridLines) * i;
-    const y = pad.top + chartH - (chartH * i / gridLines);
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(cw - pad.right, y);
-    ctx.stroke();
-    ctx.fillText('RM ' + Math.round(val).toLocaleString('en-MY'), pad.left - 5, y);
-  }
-
-  // X axis labels
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.font = (isMobile ? '8px' : '11px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
-  const xStep = steps > 10 ? Math.ceil(steps / 10) : 1;
-  for (let y = 0; y <= steps; y += xStep) {
-    const t = (y / steps) * years;
-    const x = pad.left + (t / years) * chartW;
-    ctx.fillText(Number(t).toFixed(t % 1 === 0 ? 0 : 1) + 'yr', x, ch - pad.bottom + 8);
-  }
-  ctx.fillText('Time', cw / 2, ch - pad.bottom + 24);
-
-  function drawLine(data, color, dashed) {
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash(dashed ? [6, 4] : []);
-    data.forEach((d, i) => {
-      const x = pad.left + (d.t / years) * chartW;
-      const y = pad.top + chartH - (d.v / maxVal) * chartH;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-    ctx.setLineDash([]);
-    data.forEach((d, i) => {
-      if (i % Math.ceil(steps / 8) !== 0 && i !== 0 && i !== data.length - 1) return;
-      const x = pad.left + (d.t / years) * chartW;
-      const y = pad.top + chartH - (d.v / maxVal) * chartH;
-      ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.strokeStyle = '#1a1a1a';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    });
-  }
-
-  // Initial investment line
-  ctx.beginPath();
-  ctx.strokeStyle = '#F7931A';
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([6, 4]);
-  const initY = pad.top + chartH - (investment / maxVal) * chartH;
-  ctx.moveTo(pad.left, initY);
-  ctx.lineTo(cw - pad.right, initY);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = '#F7931A';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'bottom';
-  ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.fillText('Initial RM ' + investment.toLocaleString('en-MY'), pad.left + 6, initY - 2);
-
-  drawLine(dataX, '#3b82f6', false);
-  drawLine(dataY, '#a855f7', false);
-
-  // End labels
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.font = (isMobile ? '8px' : '10px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
-  const lastX = dataX[dataX.length - 1];
-  const lx = pad.left + (lastX.t / years) * chartW + 8;
-  const ly = pad.top + chartH - (lastX.v / maxVal) * chartH - 8;
-  ctx.fillStyle = '#3b82f6';
-  ctx.fillText('X: RM ' + Math.round(lastX.v).toLocaleString('en-MY'), lx, ly);
-  const lastY = dataY[dataY.length - 1];
-  const lx2 = pad.left + (lastY.t / years) * chartW + 8;
-  const ly2 = pad.top + chartH - (lastY.v / maxVal) * chartH - 8;
-  ctx.fillStyle = '#a855f7';
-  ctx.fillText('Y: RM ' + Math.round(lastY.v).toLocaleString('en-MY'), lx2, ly2);
+  drawChart('growthChartRM', investment, rateX, rateY, years, 'RM');
 }
 
-// ── Draw BTC Growth Chart ──
 function drawGrowthChartBTC(investment, rateX, rateY, years) {
-  const btcRate = btcPriceMYR;
-  if (!btcRate || btcRate <= 0) return;
-  const canvas = document.getElementById('growthChartBTC');
+  drawChart('growthChartBTC', investment, rateX, rateY, years, 'BTC');
+}
+
+// ── Unified chart drawing function ──
+function drawChart(canvasId, investment, rateX, rateY, years, unit) {
+  const canvas = document.getElementById(canvasId);
   if (!canvas) return;
+  if (unit === 'BTC' && (!btcPriceMYR || btcPriceMYR <= 0)) return;
+  
   const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : { width: 520 };
   const containerWidth = Math.min(rect.width - 4, 600);
   const dpr = window.devicePixelRatio || 1;
+  const canvasHeight = 240;
   const cw = containerWidth;
-  const ch = 240;
+  const ch = canvasHeight;
   canvas.width = cw * dpr;
   canvas.height = ch * dpr;
   canvas.style.width = cw + 'px';
@@ -1313,23 +1238,32 @@ function drawGrowthChartBTC(investment, rateX, rateY, years) {
   const chartW = cw - pad.left - pad.right;
   const chartH = ch - pad.top - pad.bottom;
 
-  const initBtc = investment / btcRate;
+  const btcRate = btcPriceMYR;
+  const initVal = unit === 'BTC' ? investment / btcRate : investment;
   const steps = Math.max(Math.ceil(years), 1);
+
+  // Compute data points
   const dataX = [];
   const dataY = [];
-  let maxVal = initBtc;
+  let maxVal = initVal;
   for (let y = 0; y <= steps; y++) {
     const t = (y / steps) * years;
-    const vx = (investment * Math.pow(1 + rateX / 100, t)) / btcRate;
-    const vy = (investment * Math.pow(1 + rateY / 100, t)) / btcRate;
+    const fv = investment * Math.pow(1 + rateX / 100, t);
+    const fv2 = investment * Math.pow(1 + rateY / 100, t);
+    const vx = unit === 'BTC' ? fv / btcRate : fv;
+    const vy = unit === 'BTC' ? fv2 / btcRate : fv2;
     dataX.push({ t, v: vx });
     dataY.push({ t, v: vy });
     if (vx > maxVal) maxVal = vx;
     if (vy > maxVal) maxVal = vy;
   }
-  // Round max to a nice value
-  const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal)));
-  maxVal = Math.ceil(maxVal * 1.15 / magnitude) * magnitude;
+  // Round max
+  if (unit === 'BTC') {
+    const mag = Math.pow(10, Math.floor(Math.log10(maxVal)));
+    maxVal = Math.ceil(maxVal * 1.15 / mag) * mag;
+  } else {
+    maxVal = Math.ceil(maxVal * 1.15 / 10000) * 10000;
+  }
 
   ctx.clearRect(0, 0, cw, ch);
 
@@ -1341,6 +1275,9 @@ function drawGrowthChartBTC(investment, rateX, rateY, years) {
   ctx.fillStyle = '#888';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
+  const fmtGrid = unit === 'BTC'
+    ? (v) => v.toFixed(v < 1 ? 4 : 2) + ' BTC'
+    : (v) => 'RM ' + Math.round(v).toLocaleString('en-MY');
   for (let i = 0; i <= gridLines; i++) {
     const val = (maxVal / gridLines) * i;
     const y = pad.top + chartH - (chartH * i / gridLines);
@@ -1348,7 +1285,7 @@ function drawGrowthChartBTC(investment, rateX, rateY, years) {
     ctx.moveTo(pad.left, y);
     ctx.lineTo(cw - pad.right, y);
     ctx.stroke();
-    ctx.fillText(val.toFixed(val < 1 ? 4 : 2) + ' BTC', pad.left - 5, y);
+    ctx.fillText(fmtGrid(val), pad.left - 5, y);
   }
 
   // X labels
@@ -1394,7 +1331,7 @@ function drawGrowthChartBTC(investment, rateX, rateY, years) {
   ctx.strokeStyle = '#F7931A';
   ctx.lineWidth = 1.5;
   ctx.setLineDash([5, 3]);
-  const initY = pad.top + chartH - (initBtc / maxVal) * chartH;
+  const initY = pad.top + chartH - (initVal / maxVal) * chartH;
   ctx.moveTo(pad.left, initY);
   ctx.lineTo(cw - pad.right, initY);
   ctx.stroke();
@@ -1403,7 +1340,8 @@ function drawGrowthChartBTC(investment, rateX, rateY, years) {
   ctx.textAlign = 'left';
   ctx.textBaseline = 'bottom';
   ctx.font = (isMobile ? '7px' : '9px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.fillText('Initial ' + initBtc.toFixed(4) + ' BTC', pad.left + 4, initY - 2);
+  const initLabel = unit === 'BTC' ? 'Initial ' + initVal.toFixed(4) + ' BTC' : 'Initial RM ' + investment.toLocaleString('en-MY');
+  ctx.fillText(initLabel, pad.left + 4, initY - 2);
 
   drawLine(dataX, '#3b82f6');
   drawLine(dataY, '#a855f7');
@@ -1414,14 +1352,15 @@ function drawGrowthChartBTC(investment, rateX, rateY, years) {
   ctx.font = (isMobile ? '7px' : '9px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
   const lastX = dataX[dataX.length - 1];
   const lastY = dataY[dataY.length - 1];
+  const fmtEnd = unit === 'BTC' ? (v) => v.toFixed(4) + ' BTC' : (v) => 'RM ' + Math.round(v).toLocaleString('en-MY');
   const lx = pad.left + (lastX.t / years) * chartW + 6;
   const ly = pad.top + chartH - (lastX.v / maxVal) * chartH - 6;
   ctx.fillStyle = '#3b82f6';
-  ctx.fillText('X: ' + lastX.v.toFixed(4) + ' BTC', lx, ly);
+  ctx.fillText('X: ' + fmtEnd(lastX.v), lx, ly);
   const lx2 = pad.left + (lastY.t / years) * chartW + 6;
   const ly2 = pad.top + chartH - (lastY.v / maxVal) * chartH - 6;
   ctx.fillStyle = '#a855f7';
-  ctx.fillText('Y: ' + lastY.v.toFixed(4) + ' BTC', lx2, ly2);
+  ctx.fillText('Y: ' + fmtEnd(lastY.v), lx2, ly2);
 }
 
 // ── MYR ↔ BTC Converter ──
