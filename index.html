@@ -156,8 +156,9 @@
     .comparison-bar { height: 30px; }
     .comparison-bar .bar-x, .comparison-bar .bar-y { font-size: 0.65rem; }
     
-    /* Chart */
-    #growthChart { height: 200px !important; }
+    /* Charts */
+    #growthChartRM, #growthChartBTC { height: 180px !important; }
+    .card:has(#growthChartRM) .grid-2 { grid-template-columns: 1fr !important; }
     
     /* Converter */
     .converter-row { gap: 6px; }
@@ -560,9 +561,9 @@
     .footer { padding: 12px 0 !important; font-size: 0.7rem !important; }
     .slider-container .slider-header .value { font-size: 1rem !important; }
     
-    /* Chart in print */
-    #growthChart { max-width: 100% !important; height: auto !important; }
-    .card:has(#growthChart) { break-inside: avoid; page-break-inside: avoid; padding: 8px 12px !important; }
+    /* Charts in print */
+    #growthChartRM, #growthChartBTC { max-width: 100% !important; height: auto !important; }
+    .card:has(#growthChartRM) { break-inside: avoid; page-break-inside: avoid; padding: 8px 12px !important; }
   }
 
   /* PDF loading overlay */
@@ -840,13 +841,20 @@
     </div>
   </div>
 
-  <!-- Growth Chart: X vs Y -->
+  <!-- Growth Charts: RM & BTC -->
   <div class="card">
     <div class="card-title">📈 Growth Comparison — X vs Y Over Time</div>
-    <div style="position:relative;">
-      <canvas id="growthChart" width="800" height="280" style="width:100%;height:auto;max-width:100%;background:var(--gray-800);border-radius:8px;display:block;margin:0 auto;"></canvas>
+    <div class="grid-2">
+      <div>
+        <div style="text-align:center;font-size:0.82rem;color:var(--gray-400);margin-bottom:6px;">🇲🇾 In Malaysian Ringgit (RM)</div>
+        <canvas id="growthChartRM" width="520" height="240" style="width:100%;height:auto;max-width:100%;background:var(--gray-800);border-radius:8px;display:block;margin:0 auto;"></canvas>
+      </div>
+      <div>
+        <div style="text-align:center;font-size:0.82rem;color:var(--gray-400);margin-bottom:6px;">₿ In Bitcoin (BTC)</div>
+        <canvas id="growthChartBTC" width="520" height="240" style="width:100%;height:auto;max-width:100%;background:var(--gray-800);border-radius:8px;display:block;margin:0 auto;"></canvas>
+      </div>
     </div>
-    <div style="display:flex;justify-content:center;gap:30px;margin-top:10px;font-size:0.85rem;flex-wrap:wrap;">
+    <div style="display:flex;justify-content:center;gap:24px;margin-top:8px;font-size:0.82rem;flex-wrap:wrap;">
       <span><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Projection X</span>
       <span><span style="display:inline-block;width:12px;height:12px;background:#a855f7;border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Projection Y</span>
       <span><span style="display:inline-block;width:12px;height:12px;background:var(--orange);border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Initial Investment</span>
@@ -1055,8 +1063,9 @@ function calculate() {
   document.getElementById('summaryBest').textContent = fvX >= fvY ? fmtRm(fvX) + ' (X)' : fmtRm(fvY) + ' (Y)';
   document.getElementById('summaryBtc').textContent = fmtBtc(btcPriceMYR > 0 ? investment / btcPriceMYR : 0);
 
-  // Draw growth chart
-  drawGrowthChart(investment, rateX, rateY, years);
+  // Draw growth charts
+  drawGrowthChartRM(investment, rateX, rateY, years);
+  drawGrowthChartBTC(investment, rateX, rateY, years);
 }
 
 // ── Redraw chart on window resize (debounced) ──
@@ -1068,7 +1077,8 @@ window.addEventListener('resize', function() {
     const years = parseFloat(document.getElementById('yearsSlider').value) || 1;
     const rateX = parseFloat(document.getElementById('rateX').value) || 0;
     const rateY = parseFloat(document.getElementById('rateY').value) || 0;
-    drawGrowthChart(investment, rateX, rateY, years);
+    drawGrowthChartRM(investment, rateX, rateY, years);
+    drawGrowthChartBTC(investment, rateX, rateY, years);
   }, 250);
 });
 
@@ -1145,8 +1155,8 @@ function calculateProduct() {
 }
 
 // ── Draw Growth Comparison Chart ──
-function drawGrowthChart(investment, rateX, rateY, years) {
-  const canvas = document.getElementById('growthChart');
+function drawGrowthChartRM(investment, rateX, rateY, years) {
+  const canvas = document.getElementById('growthChartRM');
   if (!canvas) return;
   // Make canvas resolution match display size for sharp rendering
   const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : { width: 800 };
@@ -1277,6 +1287,140 @@ function drawGrowthChart(investment, rateX, rateY, years) {
   const ly2 = pad.top + chartH - (lastY.v / maxVal) * chartH - 8;
   ctx.fillStyle = '#a855f7';
   ctx.fillText('Y: RM ' + Math.round(lastY.v).toLocaleString('en-MY'), lx2, ly2);
+}
+
+// ── Draw BTC Growth Chart ──
+function drawGrowthChartBTC(investment, rateX, rateY, years) {
+  const btcRate = btcPriceMYR;
+  if (!btcRate || btcRate <= 0) return;
+  const canvas = document.getElementById('growthChartBTC');
+  if (!canvas) return;
+  const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : { width: 520 };
+  const containerWidth = Math.min(rect.width - 4, 600);
+  const dpr = window.devicePixelRatio || 1;
+  const cw = containerWidth;
+  const ch = 240;
+  canvas.width = cw * dpr;
+  canvas.height = ch * dpr;
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const isMobile = cw < 400;
+  const pad = { top: isMobile ? 18 : 25, bottom: isMobile ? 28 : 35, left: isMobile ? 55 : 70, right: isMobile ? 12 : 25 };
+  const chartW = cw - pad.left - pad.right;
+  const chartH = ch - pad.top - pad.bottom;
+
+  const initBtc = investment / btcRate;
+  const steps = Math.max(Math.ceil(years), 1);
+  const dataX = [];
+  const dataY = [];
+  let maxVal = initBtc;
+  for (let y = 0; y <= steps; y++) {
+    const t = (y / steps) * years;
+    const vx = (investment * Math.pow(1 + rateX / 100, t)) / btcRate;
+    const vy = (investment * Math.pow(1 + rateY / 100, t)) / btcRate;
+    dataX.push({ t, v: vx });
+    dataY.push({ t, v: vy });
+    if (vx > maxVal) maxVal = vx;
+    if (vy > maxVal) maxVal = vy;
+  }
+  // Round max to a nice value
+  const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal)));
+  maxVal = Math.ceil(maxVal * 1.15 / magnitude) * magnitude;
+
+  ctx.clearRect(0, 0, cw, ch);
+
+  // Grid
+  const gridLines = 4;
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  ctx.font = (isMobile ? '8px' : '10px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i <= gridLines; i++) {
+    const val = (maxVal / gridLines) * i;
+    const y = pad.top + chartH - (chartH * i / gridLines);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(cw - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(val.toFixed(val < 1 ? 4 : 2) + ' BTC', pad.left - 5, y);
+  }
+
+  // X labels
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.font = (isMobile ? '7px' : '9px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
+  const xStep = steps > 10 ? Math.ceil(steps / 10) : 1;
+  for (let y = 0; y <= steps; y += xStep) {
+    const t = (y / steps) * years;
+    const x = pad.left + (t / years) * chartW;
+    ctx.fillText(Number(t).toFixed(t % 1 === 0 ? 0 : 1) + 'yr', x, ch - pad.bottom + 6);
+  }
+  ctx.fillText('Time', cw / 2, ch - pad.bottom + 18);
+
+  function drawLine(data, color) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    data.forEach((d, i) => {
+      const x = pad.left + (d.t / years) * chartW;
+      const y = pad.top + chartH - (d.v / maxVal) * chartH;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    data.forEach((d, i) => {
+      if (i % Math.ceil(steps / 6) !== 0 && i !== 0 && i !== data.length - 1) return;
+      const x = pad.left + (d.t / years) * chartW;
+      const y = pad.top + chartH - (d.v / maxVal) * chartH;
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+  }
+
+  // Initial investment line
+  ctx.beginPath();
+  ctx.strokeStyle = '#F7931A';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 3]);
+  const initY = pad.top + chartH - (initBtc / maxVal) * chartH;
+  ctx.moveTo(pad.left, initY);
+  ctx.lineTo(cw - pad.right, initY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#F7931A';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.font = (isMobile ? '7px' : '9px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillText('Initial ' + initBtc.toFixed(4) + ' BTC', pad.left + 4, initY - 2);
+
+  drawLine(dataX, '#3b82f6');
+  drawLine(dataY, '#a855f7');
+
+  // End labels
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.font = (isMobile ? '7px' : '9px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
+  const lastX = dataX[dataX.length - 1];
+  const lastY = dataY[dataY.length - 1];
+  const lx = pad.left + (lastX.t / years) * chartW + 6;
+  const ly = pad.top + chartH - (lastX.v / maxVal) * chartH - 6;
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText('X: ' + lastX.v.toFixed(4) + ' BTC', lx, ly);
+  const lx2 = pad.left + (lastY.t / years) * chartW + 6;
+  const ly2 = pad.top + chartH - (lastY.v / maxVal) * chartH - 6;
+  ctx.fillStyle = '#a855f7';
+  ctx.fillText('Y: ' + lastY.v.toFixed(4) + ' BTC', lx2, ly2);
 }
 
 // ── MYR ↔ BTC Converter ──
