@@ -615,6 +615,13 @@
     
     /* Investment summary product detail */
     .card .result-grid + div[style*="border-top"] { margin-top: 6px !important; padding-top: 6px !important; }
+    
+    /* What-if table */
+    #whatifTable { font-size: 0.7rem !important; }
+    #whatifTable th, #whatifTable td { padding: 4px 6px !important; }
+    
+    /* Presets */
+    #presetList > div { padding: 5px 8px !important; font-size: 0.75rem !important; }
   }
 
   /* PDF loading overlay */
@@ -697,6 +704,17 @@
         <span>1 yr</span><span>5 yrs</span><span>10 yrs</span><span>15 yrs</span>
       </div>
     </div>
+    <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;align-items:center;">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.82rem;color:var(--gray-400);">
+        <input type="checkbox" id="compoundToggle" onchange="calculate()" style="width:16px;height:16px;accent-color:var(--orange);">
+        Monthly Compounding
+      </label>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label for="inflationRate" style="font-size:0.8rem;color:var(--gray-400);margin:0;">Inflation Rate</label>
+        <input type="number" id="inflationRate" value="3" min="0" max="50" step="0.5" style="width:70px;padding:5px 8px;background:var(--gray-800);border:1px solid var(--gray-600);border-radius:6px;color:#fff;font-size:0.85rem;outline:none;" oninput="calculate()">
+        <span style="color:var(--gray-400);font-size:0.8rem;">%</span>
+      </div>
+    </div>
   </div>
 
   <!-- Three Columns: X | Y | Product Summary -->
@@ -729,6 +747,14 @@
           <div class="label">Annualized ROI</div>
           <div class="value positive" id="annualRoiX">—</div>
         </div>
+        <div class="result-item" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;">
+          <div class="label">Real ROI (w/ inflation)</div>
+          <div class="value positive" id="realRoiX">—</div>
+        </div>
+        <div class="result-item" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;">
+          <div class="label">Real Annualized</div>
+          <div class="value positive" id="realAnnualRoiX">—</div>
+        </div>
       </div>
     </div>
 
@@ -758,6 +784,14 @@
         <div class="result-item">
           <div class="label">Annualized ROI</div>
           <div class="value positive" id="annualRoiY">—</div>
+        </div>
+        <div class="result-item" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;">
+          <div class="label">Real ROI (w/ inflation)</div>
+          <div class="value positive" id="realRoiY">—</div>
+        </div>
+        <div class="result-item" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;">
+          <div class="label">Real Annualized</div>
+          <div class="value positive" id="realAnnualRoiY">—</div>
         </div>
       </div>
     </div>
@@ -810,6 +844,27 @@
         <div class="input-row">
           <input type="number" id="revenueGrowth" value="5" min="0" max="100" step="1" oninput="calculateProduct()">
           <span class="currency-badge">%</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>COGS as % of Revenue</label>
+        <div class="input-row">
+          <input type="number" id="cogsPercent" value="30" min="0" max="100" step="1" oninput="calculateProduct()">
+          <span class="currency-badge">%</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Number of Employees</label>
+        <div class="input-row">
+          <input type="number" id="employees" value="2" min="0" max="100" step="1" oninput="calculateProduct()">
+          <span class="currency-badge" style="color:#34d399;">👥</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Monthly Rental / Space Cost — RM</label>
+        <div class="input-row">
+          <span class="currency-badge">RM</span>
+          <input type="number" id="rentalCost" value="1500" min="0" step="100" oninput="calculateProduct()">
         </div>
       </div>
 
@@ -977,13 +1032,42 @@
     </div>
   </div>
 
+  <!-- 📊 What-If Scenario Table -->
+  <div class="card">
+    <div class="card-title">📊 What-If Scenarios — ROI at Different Growth Rates</div>
+    <div style="overflow-x:auto;">
+      <table id="whatifTable" style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+        <thead>
+          <tr style="background:var(--gray-800);">
+            <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--gray-700);">Growth Rate</th>
+            <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--gray-700);">Future Value (RM)</th>
+            <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--gray-700);">Total ROI</th>
+            <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--gray-700);">In BTC</th>
+            <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--gray-700);">BTC Gain</th>
+          </tr>
+        </thead>
+        <tbody id="whatifBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 💾 Save/Load Presets -->
+  <div class="card">
+    <div class="card-title">💾 Saved Scenarios</div>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+      <input type="text" id="presetName" placeholder="Scenario name..." style="flex:1;min-width:150px;padding:8px 12px;background:var(--gray-800);border:1px solid var(--gray-600);border-radius:7px;color:#fff;font-size:0.9rem;outline:none;">
+      <button class="btn" style="background:var(--orange);color:#000;border:none;padding:8px 16px;font-size:0.85rem;" onclick="savePreset()">💾 Save Current</button>
+    </div>
+    <div id="presetList" style="display:flex;flex-direction:column;gap:6px;"></div>
+  </div>
+
   <!-- Disclaimer -->
   <div class="note">
     <strong>⚠️ Disclaimer:</strong> This calculator is for <strong>educational and illustrative purposes only</strong>. Past performance does not guarantee future results. Bitcoin price is volatile — the MYR/BTC conversion uses the current market rate and is not a prediction of future Bitcoin value. Product cost projections are estimates based on user input. Always consult a licensed financial advisor before making investment decisions. I am not your financial advisor.
   </div>
 
   <div class="footer">
-    Built by <a href="#">lunasierra7834</a> · Powered by CoinGecko API · Not financial advice
+    Built by <a href="#">lunasierra7834</a> · <a href="https://heat-a11y.github.io/btc-roi-calculator/">btcroi.app</a> · Powered by CoinGecko API · Not financial advice
   </div>
 </div>
 
@@ -992,12 +1076,64 @@
 let btcPriceUSD = 65053;
 let btcPriceMYR = 266314;
 
+// ── URL Param helpers ──
+function getURLParams() {
+  const p = new URLSearchParams(window.location.search);
+  const out = {};
+  if (p.has('inv')) out.investment = parseFloat(p.get('inv'));
+  if (p.has('x')) out.rateX = parseFloat(p.get('x'));
+  if (p.has('y')) out.rateY = parseFloat(p.get('y'));
+  if (p.has('yrs')) out.years = parseFloat(p.get('yrs'));
+  if (p.has('comp')) out.compound = p.get('comp') === 'monthly';
+  if (p.has('inf')) out.inflation = parseFloat(p.get('inf'));
+  if (p.has('prod')) out.productName = p.get('prod');
+  if (p.has('cogs')) out.cogs = parseFloat(p.get('cogs'));
+  if (p.has('oh')) out.overhead = parseFloat(p.get('oh'));
+  return out;
+}
+function updateURL() {
+  const inv = document.getElementById('investment').value;
+  const x = document.getElementById('rateX').value;
+  const y = document.getElementById('rateY').value;
+  const yrs = document.getElementById('yearsSlider').value;
+  const comp = document.getElementById('compoundToggle')?.checked ? 'monthly' : 'annual';
+  const inf = document.getElementById('inflationRate')?.value || '';
+  const prod = document.getElementById('productName')?.value || '';
+  const cogs = document.getElementById('cogs')?.value || '';
+  const oh = document.getElementById('overhead')?.value || '';
+  const params = new URLSearchParams();
+  if (inv != 50000) params.set('inv', inv);
+  if (x != 12) params.set('x', x);
+  if (y != 20) params.set('y', y);
+  if (yrs != 5) params.set('yrs', yrs);
+  if (comp != 'annual') params.set('comp', comp);
+  if (inf) params.set('inf', inf);
+  if (prod && prod != "Friend's Business") params.set('prod', prod);
+  if (cogs && cogs != 15000) params.set('cogs', cogs);
+  if (oh && oh != 3000) params.set('oh', oh);
+  const qs = params.toString();
+  const url = qs ? window.location.pathname + '?' + qs : window.location.pathname;
+  window.history.replaceState({}, '', url);
+}
+
 // ── Init ──
 async function init() {
+  // Apply URL params before anything
+  const urlp = getURLParams();
+  if (urlp.investment) document.getElementById('investment').value = urlp.investment;
+  if (urlp.rateX) document.getElementById('rateX').value = urlp.rateX;
+  if (urlp.rateY) document.getElementById('rateY').value = urlp.rateY;
+  if (urlp.years) { document.getElementById('yearsSlider').value = urlp.years; }
+  if (urlp.compound) { const cb = document.getElementById('compoundToggle'); if (cb) cb.checked = true; }
+  if (urlp.inflation) { const inf = document.getElementById('inflationRate'); if (inf) inf.value = urlp.inflation; }
+  if (urlp.productName) { const el = document.getElementById('productName'); if (el) el.value = urlp.productName; }
+  if (urlp.cogs) { const el = document.getElementById('cogs'); if (el) el.value = urlp.cogs; }
+  if (urlp.overhead) { const el = document.getElementById('overhead'); if (el) el.value = urlp.overhead; }
   await refreshBTCPrice();
   calculate();
   calculateProduct();
   convMyrToBtc();
+  renderPresets();
 }
 init();
 
@@ -1017,6 +1153,7 @@ async function refreshBTCPrice() {
     calculate();
     calculateProduct();
     convMyrToBtc();
+    updateWhatIfTable();
   } catch(e) {
     document.getElementById('btcPriceDisplay').textContent = '⚠️ Error';
   }
@@ -1037,9 +1174,13 @@ function calculate() {
   const initBtc = btcPriceMYR > 0 ? investment / btcPriceMYR : 0;
   document.getElementById('investmentBtc').value = initBtc.toFixed(8);
 
-  // Future values
-  const fvX = investment * Math.pow(1 + rateX / 100, years);
-  const fvY = investment * Math.pow(1 + rateY / 100, years);
+  // Compounding mode
+  const monthly = document.getElementById('compoundToggle')?.checked || false;
+  const periods = monthly ? years * 12 : years;
+  const periodicRateX = monthly ? (rateX / 100 / 12) : (rateX / 100);
+  const periodicRateY = monthly ? (rateY / 100 / 12) : (rateY / 100);
+  const fvX = investment * Math.pow(1 + periodicRateX, periods);
+  const fvY = investment * Math.pow(1 + periodicRateY, periods);
 
   const btcX = btcPriceMYR > 0 ? fvX / btcPriceMYR : 0;
   const btcY = btcPriceMYR > 0 ? fvY / btcPriceMYR : 0;
@@ -1049,6 +1190,13 @@ function calculate() {
 
   const annualRoiX = years > 0 && investment > 0 ? (Math.pow(fvX / investment, 1 / years) - 1) * 100 : 0;
   const annualRoiY = years > 0 && investment > 0 ? (Math.pow(fvY / investment, 1 / years) - 1) * 100 : 0;
+
+  // Inflation-adjusted (Real ROI)
+  const inflation = parseFloat(document.getElementById('inflationRate')?.value) || 0;
+  const realRoiX = inflation > 0 ? ((1 + roiX / 100) / (1 + inflation / 100) - 1) * 100 : roiX;
+  const realRoiY = inflation > 0 ? ((1 + roiY / 100) / (1 + inflation / 100) - 1) * 100 : roiY;
+  const realAnnualRoiX = inflation > 0 ? ((1 + annualRoiX / 100) / (1 + inflation / 100) - 1) * 100 : annualRoiX;
+  const realAnnualRoiY = inflation > 0 ? ((1 + annualRoiY / 100) / (1 + inflation / 100) - 1) * 100 : annualRoiY;
 
   const diffRm = fvY - fvX;
   const diffBtc = btcY - btcX;
@@ -1076,6 +1224,10 @@ function calculate() {
   setVal('roiY', fmtPct(roiY), roiY >= 0 ? 'positive' : 'negative');
   setVal('annualRoiX', fmtPct(annualRoiX), annualRoiX >= 0 ? 'positive' : 'negative');
   setVal('annualRoiY', fmtPct(annualRoiY), annualRoiY >= 0 ? 'positive' : 'negative');
+  setVal('realRoiX', fmtPct(realRoiX), realRoiX >= 0 ? 'positive' : 'negative');
+  setVal('realRoiY', fmtPct(realRoiY), realRoiY >= 0 ? 'positive' : 'negative');
+  setVal('realAnnualRoiX', fmtPct(realAnnualRoiX), realAnnualRoiX >= 0 ? 'positive' : 'negative');
+  setVal('realAnnualRoiY', fmtPct(realAnnualRoiY), realAnnualRoiY >= 0 ? 'positive' : 'negative');
 
   setVal('btcGainX', fmtBtc(btcGainX));
   setVal('btcGainY', fmtBtc(btcGainY));
@@ -1117,6 +1269,10 @@ function calculate() {
   // Draw growth charts
   drawGrowthChartRM(investment, rateX, rateY, years);
   drawGrowthChartBTC(investment, rateX, rateY, years);
+  
+  // Update what-if table & URL
+  updateWhatIfTable();
+  updateURL();
 }
 
 // ── Redraw chart on window resize (debounced) ──
@@ -1141,9 +1297,14 @@ function calculateProduct() {
   const otherCosts = parseFloat(document.getElementById('otherCosts').value) || 0;
   const monthlyRevenue = parseFloat(document.getElementById('monthlyRevenue').value) || 0;
   const revenueGrowth = parseFloat(document.getElementById('revenueGrowth').value) || 0;
+  const cogsPercent = parseFloat(document.getElementById('cogsPercent')?.value) || 30;
+  const employees = parseFloat(document.getElementById('employees')?.value) || 0;
+  const rentalCost = parseFloat(document.getElementById('rentalCost')?.value) || 0;
 
   const totalUpfront = cogs + marketing + otherCosts;
-  const monthlyRecurring = overhead;
+  // Monthly recurring now includes overhead, rental, and estimated salary (RM 2,500/emp)
+  const salaryCost = employees * 2500;
+  const monthlyRecurring = overhead + rentalCost + salaryCost;
 
   // Calculate year-1 monthly net (average, including growth)
   let totalYearRevenue = 0;
@@ -1203,6 +1364,7 @@ function calculateProduct() {
     document.getElementById('summaryBreakeven').textContent = '∞';
     document.getElementById('summaryBreakeven').className = 'value negative';
   }
+  updateWhatIfTable();
 }
 
 // ── Draw Growth Comparison Chart ──
@@ -1363,6 +1525,119 @@ function drawChart(canvasId, investment, rateX, rateY, years, unit) {
   ctx.fillText('Y: ' + fmtEnd(lastY.v), lx2, ly2);
 }
 
+// ── What-If Scenario Table ──
+function updateWhatIfTable() {
+  const tbody = document.getElementById('whatifBody');
+  if (!tbody) return;
+  const investment = parseFloat(document.getElementById('investment').value) || 0;
+  const years = parseFloat(document.getElementById('yearsSlider').value) || 1;
+  const rates = [5, 8, 10, 12, 15, 18, 20, 25, 30];
+  const monthly = document.getElementById('compoundToggle')?.checked || false;
+  const periods = monthly ? years * 12 : years;
+  const fmtRm = (v) => 'RM ' + Number(v).toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fmtPct = (v) => (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
+  const fmtBtc = (v) => Number(v).toFixed(6);
+  let html = '';
+  rates.forEach(r => {
+    const periodicRate = monthly ? (r / 100 / 12) : (r / 100);
+    const fv = investment * Math.pow(1 + periodicRate, periods);
+    const roi = ((fv - investment) / investment) * 100;
+    const btcVal = btcPriceMYR > 0 ? fv / btcPriceMYR : 0;
+    const btcGain = btcVal - (btcPriceMYR > 0 ? investment / btcPriceMYR : 0);
+    const highlight = Math.abs(r - (parseFloat(document.getElementById('rateX').value) || 0)) < 0.5 ? 'style="background:rgba(59,130,246,0.08);"' : Math.abs(r - (parseFloat(document.getElementById('rateY').value) || 0)) < 0.5 ? 'style="background:rgba(168,85,247,0.08);"' : '';
+    html += `<tr ${highlight}>
+      <td style="padding:6px 10px;border-bottom:1px solid var(--gray-800);font-weight:600;">${r}%</td>
+      <td style="padding:6px 10px;border-bottom:1px solid var(--gray-800);text-align:right;">${fmtRm(fv)}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid var(--gray-800);text-align:right;color:${roi >= 0 ? 'var(--green)' : 'var(--red)'};">${fmtPct(roi)}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid var(--gray-800);text-align:right;color:var(--orange);">${fmtBtc(btcVal)} BTC</td>
+      <td style="padding:6px 10px;border-bottom:1px solid var(--gray-800);text-align:right;color:var(--orange);">${btcGain >= 0 ? '+' : ''}${fmtBtc(btcGain)} BTC</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── Save/Load Presets (localStorage) ──
+function savePreset() {
+  const name = document.getElementById('presetName').value.trim();
+  if (!name) { alert('Enter a scenario name first.'); return; }
+  const data = {
+    investment: document.getElementById('investment').value,
+    rateX: document.getElementById('rateX').value,
+    rateY: document.getElementById('rateY').value,
+    years: document.getElementById('yearsSlider').value,
+    compound: document.getElementById('compoundToggle')?.checked || false,
+    inflation: document.getElementById('inflationRate')?.value || '3',
+    productName: document.getElementById('productName').value,
+    cogs: document.getElementById('cogs').value,
+    overhead: document.getElementById('overhead').value,
+    marketing: document.getElementById('marketing').value,
+    otherCosts: document.getElementById('otherCosts').value,
+    monthlyRevenue: document.getElementById('monthlyRevenue').value,
+    revenueGrowth: document.getElementById('revenueGrowth').value,
+  };
+  const presets = JSON.parse(localStorage.getItem('btcROIPresets') || '{}');
+  presets[name] = data;
+  localStorage.setItem('btcROIPresets', JSON.stringify(presets));
+  document.getElementById('presetName').value = '';
+  renderPresets();
+}
+
+function loadPreset(name) {
+  const presets = JSON.parse(localStorage.getItem('btcROIPresets') || '{}');
+  const d = presets[name];
+  if (!d) return;
+  if (d.investment) document.getElementById('investment').value = d.investment;
+  if (d.rateX) document.getElementById('rateX').value = d.rateX;
+  if (d.rateY) document.getElementById('rateY').value = d.rateY;
+  if (d.years) document.getElementById('yearsSlider').value = d.years;
+  if (d.compound !== undefined) { const cb = document.getElementById('compoundToggle'); if (cb) cb.checked = d.compound; }
+  if (d.inflation) { const el = document.getElementById('inflationRate'); if (el) el.value = d.inflation; }
+  if (d.productName) document.getElementById('productName').value = d.productName;
+  if (d.cogs) document.getElementById('cogs').value = d.cogs;
+  if (d.overhead) document.getElementById('overhead').value = d.overhead;
+  if (d.marketing) document.getElementById('marketing').value = d.marketing;
+  if (d.otherCosts) document.getElementById('otherCosts').value = d.otherCosts;
+  if (d.monthlyRevenue) document.getElementById('monthlyRevenue').value = d.monthlyRevenue;
+  if (d.revenueGrowth) document.getElementById('revenueGrowth').value = d.revenueGrowth;
+  calculate();
+  calculateProduct();
+}
+
+function deletePreset(name) {
+  if (!confirm(`Delete "${name}"?`)) return;
+  const presets = JSON.parse(localStorage.getItem('btcROIPresets') || '{}');
+  delete presets[name];
+  localStorage.setItem('btcROIPresets', JSON.stringify(presets));
+  renderPresets();
+}
+
+function renderPresets() {
+  const list = document.getElementById('presetList');
+  if (!list) return;
+  const presets = JSON.parse(localStorage.getItem('btcROIPresets') || '{}');
+  const keys = Object.keys(presets);
+  if (keys.length === 0) {
+    list.innerHTML = '<div style="color:var(--gray-600);font-size:0.82rem;padding:8px;">No saved scenarios yet.</div>';
+    return;
+  }
+  list.innerHTML = keys.reverse().map(name => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--gray-800);padding:8px 12px;border-radius:7px;border:1px solid var(--gray-700);">
+      <span style="flex:1;font-size:0.85rem;">💾 ${name}</span>
+      <button class="btn" style="background:var(--gray-700);color:#fff;border:none;padding:4px 12px;font-size:0.78rem;" onclick="loadPreset('${name.replace(/'/g, "\\'")}')">Load</button>
+      <button class="btn" style="background:rgba(239,68,68,0.15);color:var(--red);border:none;padding:4px 12px;font-size:0.78rem;" onclick="deletePreset('${name.replace(/'/g, "\\'")}')">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── Branding for PDF export ──
+function addPDFBranding(doc) {
+  // Add lunasierra7834 watermark to the cloned content for print
+  const brand = document.createElement('div');
+  brand.style.cssText = 'position:fixed;bottom:10px;right:10px;font-size:8px;color:#ccc;text-align:right;opacity:0.5;z-index:9999;';
+  brand.innerHTML = 'lunasierra7834 · btcroi.app';
+  doc.body.appendChild(brand);
+}
+
 // ── MYR ↔ BTC Converter ──
 function convMyrToBtc() {
   const myr = parseFloat(document.getElementById('convMyr').value) || 0;
@@ -1398,6 +1673,7 @@ function resetAll() {
   calculate();
   calculateProduct();
   convMyrToBtc();
+  updateWhatIfTable();
 }
 
 // ── Export PDF (opens new tab, triggers browser print in A4 landscape) ──
@@ -1462,6 +1738,7 @@ ${styleHTML}
   };
 <\/script>
   ${content.outerHTML}
+<div style="position:fixed;bottom:8px;right:12px;font-size:7px;color:#bbb;opacity:0.6;text-align:right;z-index:9999;">lunasierra7834 · btcroi.app</div>
 </body>
 </html>`);
   
